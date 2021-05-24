@@ -1,10 +1,14 @@
 from time import time 
 import json 
 import hashlib
+from time import sleep
 
 class Blockchain(object):
     def __init__(self):
     	self.chain = [self.addGenesisBlock()]
+    	self.pendingTransactions = []
+    	self.difficulty = 3
+    	self.minerRewards = 50
 
 
     def getLastBlock(self):
@@ -77,6 +81,33 @@ class Block(object):
 		hashString  = str(self.time)+ hashTransactions + self.prev + str(self.index)
 		hashEncoded = json.dumps(hashString, sort_keys=True).encode()
 		return hashlib.sha256(hashEncoded).hexdigest() #SHA256 Hash Encoding - Same as Bitcoin
+
+
+	def mineBlock(self, difficulty):
+		"""Mine a given block is just set of try and errors
+		till your hash match prefix matches with the hash difficulty
+		the larger the difficulty the longer it will take to mine
+		"""
+		arr = []
+		for i in range(0, difficulty):
+			arr.append(i);
+
+		#compute until the beginning of the hash  = 0123... difficulty
+		arrStr = map(str, arr)
+		hashPuzzle = ''.join(arrStr)
+		while self.hash[0:difficulty] != hashPuzzle:
+			self.nonse +=1;
+			self.hash = self.calculateHash()
+			print("Nonse:",self.nonse)
+			print("Hash Attempt:",self.hash)
+			print("Hash We want:",hashPuzzle)
+			print("")
+			sleep(0.9)
+		print("")
+		print("BLock Mined! Nonse to Solve Proof of Work",self.nonse)
+		return True
+
+
 
 
 
