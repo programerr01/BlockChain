@@ -2,14 +2,14 @@ from time import time
 import json 
 import hashlib
 from time import sleep
-
+from datetime import datetime
 class Blockchain(object):
     def __init__(self):
     	self.chain = [self.addGenesisBlock()]
     	self.pendingTransactions = []
-    	self.difficulty = 3
+    	self.difficulty = 4
     	self.minerRewards = 50
-
+    	self.blockSize  = 30
 
     def getLastBlock(self):
     	return self.chain[-1]
@@ -53,6 +53,33 @@ class Blockchain(object):
     		blockArrJSON.append(blockJSON)
 
     	return blockArrJSON
+
+    def minePendingTransactions(self, miner):
+    	lenPT = len(self.pendingTransactions)
+    	if(lenPT < 1):
+    		print("Not enough transactions to mine!(Must be > 1)")
+    		return False
+
+    	else:
+    		for i in range(0,lenPT, self.blockSize):
+    			end = i + self.blockSize
+    			if i >= lenPT:
+    				end = lenPT
+
+    			transactionSlice = self.pendingTransactions[i:end]
+
+    			newBlock = Block(transactionSlice, datetime.now().strftime("%m/%d/%Y , %H:%M:%S"), len(self.chain))
+
+    			hashVal = self.getLastBlock().hash 
+    			newBlock.prev = hashVal
+    			newBlock.mineBlock(self.difficulty)
+    			self.chain.append(newBlock)
+    		print("Mining Transactions Success!")
+
+    		payMiner = Transaction("Miner Rewards", miner, self.minerRewards)
+    		self.pendingTransactions = [payMiner]
+    	return True
+
 class Block(object):
 	"""
 	Block Contains Information about itself for example it's hash 
@@ -65,9 +92,10 @@ class Block(object):
 		self.index = index; # Block Number
 		self.transactions = Transactions # Transaction data
 		self.time = time
+		self.nonse = 0
 		self.prev = '' #Hash of the Previous block 
 		self.hash = self.calculateHash() # Hash of Block 
-
+		
 
 	def calculateHash(self):
 		"""
@@ -78,7 +106,7 @@ class Block(object):
 		hashTransactions = ''
 		for transaction in self.transactions:
 			hashTransactions  += transaction.hash 
-		hashString  = str(self.time)+ hashTransactions + self.prev + str(self.index)
+		hashString  = str(self.time)+ hashTransactions + self.prev + str(self.index)+  str(self.nonse)
 		hashEncoded = json.dumps(hashString, sort_keys=True).encode()
 		return hashlib.sha256(hashEncoded).hexdigest() #SHA256 Hash Encoding - Same as Bitcoin
 
@@ -102,7 +130,7 @@ class Block(object):
 			print("Hash Attempt:",self.hash)
 			print("Hash We want:",hashPuzzle)
 			print("")
-			sleep(0.9)
+			# sleep(0.9)
 		print("")
 		print("BLock Mined! Nonse to Solve Proof of Work",self.nonse)
 		return True
@@ -130,7 +158,7 @@ class Transaction(object):
     	"""
     	hashString = self.sender + self.reciever + str(self.amt) + str(self.time);
     	hashEncoded = json.dumps(hashString, sort_keys=True).encode()
-    	return hashEncoded.sha256(hashEncoded).hexdigest()
+    	return hashlib.sha256(hashEncoded).hexdigest()
 
 
 
