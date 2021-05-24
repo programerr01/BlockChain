@@ -4,7 +4,7 @@ import hashlib
 
 class Blockchain(object):
     def __init__(self):
-    	self.chain = []
+    	self.chain = [self.addGenesisBlock()]
 
 
     def getLastBlock(self):
@@ -17,6 +17,14 @@ class Blockchain(object):
     		block.prev = 'none'
     	self.chain.append(block)
 
+    #This  is the first block of the blockchain that is added to it 
+    # The transaction always don't reflect real transaction
+    def addGenesisBlock(self):
+    	tArr = [];
+    	tArr.append(Transaction("me","you",10))
+    	genesis = Block(tArr, time(),0);
+    	genesis.prev = "None";
+    	return genesis;
     def chainJSONencode(self):
     	blockArrJSON = []
     	for block in self.chain:
